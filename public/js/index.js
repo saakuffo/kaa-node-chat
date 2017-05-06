@@ -9,5 +9,5 @@ socket.on('disconnect', () => {
 });
 
 socket.on('newMessage', (message) => {
-    console.log(`${message.from}: ${message.text} || ${message.createdAt}`);
+    console.log(message);
 });
