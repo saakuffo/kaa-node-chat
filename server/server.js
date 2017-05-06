@@ -15,6 +15,16 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
     console.log('New user connected');
 
+    newUserEntered(socket);
+    newMessage(socket);
+
+    socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+    });
+
+});
+
+const newMessage = (socket) => {
     socket.on('createMessage', (newMessage) => {
         console.log('createMessage', newMessage);
 
@@ -23,13 +33,23 @@ io.on('connection', (socket) => {
             text: newMessage.text,
             createdAt: new Date().getTime()
         });
+
+    });
+}
+
+const newUserEntered = (socket) => {
+    socket.emit('newMessage', {
+        from: 'Admin',
+        text: 'Welcome to the chat app',
+        createdAt: new Date().getTime()
     });
 
-    socket.on('disconnect', () => {
-        console.log('Disconnected from server');
+    socket.broadcast.emit('newMessage', {
+        from: 'Admin',
+        text: 'New user joined',
+        createdAt: new Date().getTime()
     });
-
-});
+}
 
 server.listen(port, () => {
     console.log(`Server is up on port ${port}`)
