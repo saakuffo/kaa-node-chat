@@ -18,7 +18,8 @@ io.on('connection', (socket) => {
 
     newUserEntered(socket);
     newMessage(socket);
-
+    createLocationMessage(socket);
+    
     socket.on('disconnect', () => {
         console.log('Disconnected from server');
     });
@@ -32,6 +33,12 @@ const newMessage = (socket) => {
 
         callback('This is from the server');
     });
+}
+
+const createLocationMessage = (socket) => {
+  socket.on('createLocationMessage', (coords) => {
+    io.emit('newMessage', generateMessage('Admin', `${coords.latitude}, ${coords.longitude}`))
+  });
 }
 
 const newUserEntered = (socket) => {
