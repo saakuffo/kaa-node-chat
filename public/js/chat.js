@@ -14,7 +14,7 @@ const scrollToBottom = () => {
     if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight){
         messages.scrollTop(scrollHeight)
     }
-}
+};
 
 socket.on('connect', () => {
     const params = $.deparam(window.location.search);
@@ -26,7 +26,7 @@ socket.on('connect', () => {
         } else {
             console.log('No Error');
         }
-    })
+    });
 });
 
 socket.on('disconnect', () => {
@@ -36,6 +36,16 @@ socket.on('disconnect', () => {
 const generateFormattedTime = (item) => {  
     return moment(item.createdAt).format('h:mm a');
 };
+
+socket.on('updateUserList', (connectedUsers) => {
+    const ul = $('<ul></ul>');
+
+    connectedUsers.forEach((user) => {   
+        ul.append($('<li></li>').text(user));
+    });
+
+    $('#users').html(ul);
+});
 
 socket.on('newMessage', (message) => {
     const formattedTime = generateFormattedTime(message);
