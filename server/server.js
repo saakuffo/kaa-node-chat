@@ -31,29 +31,28 @@ io.on('connection', (socket) => {
     joinRoom(socket);
     newMessage(socket);
     createLocationMessage(socket);
-
-    socket.on('disconnect', () => {
-        const leavingUser = connectedUsers.removeUser(socket.id);
-        
-        if(leavingUser) {
-            io.to(leavingUser.room).emit('newMessage', generateMessage('Admin', `${leavingUser.name} has left`));
-            io.to(leavingUser.room).emit('updateUserList', connectedUsers.getUserList(leavingUser.room));
-        }
-    });
-
+    onDisconnet(socket);
 });
 
 const newMessage = (socket) => {
     socket.on('createMessage', (newMessage, callback) => {
-        console.log('createMessage', newMessage);
-        io.emit('newMessage', generateMessage(newMessage.from, newMessage.text));
+        const user = connectedUsers.getUser(socket.id);
+
+        if(user && isRealString(newMessage.text)) {
+            io.to(user.room).emit('newMessage', generateMessage(user.name, newMessage.text));
+        }
+
         callback();
     });
 }
 
 const createLocationMessage = (socket) => {
     socket.on('createLocationMessage', (coords) => {
-        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        const user = connectedUsers.getUser(socket.id);
+
+        if(user) {
+            io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+        }
     });
 }
 
@@ -78,6 +77,18 @@ const updateUserList = (socket, params) => {
     connectedUsers.removeUser(socket.id)
     connectedUsers.addUser(socket.id, params.name, params.room)
     io.to(params.room).emit('updateUserList', connectedUsers.getUserList(params.room))
+};
+
+const onDisconnet = (socket) => {
+    socket.on('disconnect', () => {
+        const leavingUser = connectedUsers.removeUser(socket.id);
+        
+        if(leavingUser) {
+            io.to(leavingUser.room).emit('newMessage', generateMessage('Admin', `${leavingUser.name} has left`));
+            io.to(leavingUser.room).emit('updateUserList', connectedUsers.getUserList(leavingUser.room));
+        }
+    });
+
 };
 
 server.listen(port, () => {
